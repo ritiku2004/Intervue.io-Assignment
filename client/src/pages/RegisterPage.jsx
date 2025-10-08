@@ -21,7 +21,7 @@ const RegisterPage = () => {
     // Redirect to the dashboard upon successful registration and authentication
     if (isAuthenticated) {
       toast.success('Registration successful!');
-      navigate('/dashboard');
+      navigate('/login');
     }
     // Display an error message if the registration fails
     if (error) {
