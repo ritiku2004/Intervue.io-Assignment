@@ -16,7 +16,7 @@ const LoginPage = () => {
   useEffect(() => {
     if (isAuthenticated) {
       toast.success('Logged in successfully!');
-      navigate('/dashboard');
+      navigate('/login');
     }
     if (error) {
       toast.error(error);
