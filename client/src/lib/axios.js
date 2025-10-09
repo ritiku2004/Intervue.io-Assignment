@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://intervue-io-assignment-5wp1.onrender.com/api', // Your backend URL
+  baseURL: 'https://intervue-io-assignment-5wp1.onrender.com/api',
 });
 
 // Interceptor to add the token to every request if it exists

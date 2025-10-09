@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { registerUser } from '../features/auth/authSlice';
+import { registerUser, clearError } from '../features/auth/authSlice';
 import { toast } from 'react-hot-toast';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
@@ -15,36 +15,43 @@ const RegisterPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { isAuthenticated, isLoading, error } = useSelector((state) => state.auth);
+  // We get the specific error message from the slice now
+  const { isLoading, error } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    // Redirect to the dashboard upon successful registration and authentication
-    if (isAuthenticated) {
-      toast.success('Registration successful!');
-      navigate('/login');
-    }
-    // Display an error message if the registration fails
+    // Display the specific error message from the backend
     if (error) {
       toast.error(error);
+      // Clear the error in the Redux store so it doesn't show up again
+      dispatch(clearError());
     }
-  }, [isAuthenticated, error, navigate]);
-
+  }, [error, dispatch]);
+  
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.password) {
       return toast.error('Please fill in all fields.');
     }
-    dispatch(registerUser(formData));
+    
+    // dispatch returns a promise we can check
+    const resultAction = await dispatch(registerUser(formData));
+    
+    // If the registration was successful (fulfilled), show toast and navigate
+    if (registerUser.fulfilled.match(resultAction)) {
+      toast.success('Registration successful! Please log in.');
+      navigate('/login');
+    }
+    // If it failed, the useEffect will handle showing the toast error.
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-3xl font-bold text-center text-secondary">Create a Teacher Account</h2>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-md border border-gray-200">
+        <h2 className="text-3xl font-bold text-center text-gray-800">Create a Teacher Account</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           <Input
             name="name"
@@ -62,7 +69,7 @@ const RegisterPage = () => {
           <Input
             name="password"
             type="password"
-            placeholder="Password"
+            placeholder="Password (min. 6 characters)"
             value={formData.password}
             onChange={handleChange}
           />
@@ -70,7 +77,7 @@ const RegisterPage = () => {
             Create Account
           </Button>
         </form>
-        <p className="text-center">
+        <p className="text-center text-sm text-gray-600">
           Already have an account?{' '}
           <Link to="/login" className="font-medium text-primary hover:underline">
             Login
